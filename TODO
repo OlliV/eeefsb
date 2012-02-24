@@ -1,5 +1,10 @@
 - FSB stepping by using schedule queue
-- Writable proc files should be moved under /sys/ dir?
+- procfs files => sysfs
+- Add way to turn off the USB clock
+
+- Create methods for cpu speed calculation
+- Implement wq 
+- Hide functions that are not needed
 
 Form earlier authors:
 

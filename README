@@ -4,6 +4,9 @@ module into your kernel:
     make
     insmod eeefsb.ko
 
+Note: Kernel has to be loaded with acpi_enforce_resources=lax option and
+      it could be necessary to add i2c-i801 into /etc/modules.
+
 Usage:  once the module has been inserted, several files will appear in the
 /proc/eeefsb directory:
 
