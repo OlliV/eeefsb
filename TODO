@@ -1,8 +1,16 @@
-- procfs files => sysfs
+- Convert from procfs => sysfs
 
 - Improve smart stepping
-    - It should be possible to get below 990 MHz by changing M value
-    - It should be possible to reach 2.0 GHz by altering PCI PLL divisors
+    - It should be possible to get below 990 MHz by changing M term
+      Note: Super hybrid engine (Atom BCLK[0:1]) seems to alter PLL N value
+            by using some constant coefficients
+    - It should be possible to reach 2.0 GHz by altering also PCI PLL divisors
+      as it's the video card which seem to hang up due to increasing PCI clock.
+      At least I'm told so... this will require some measurements to confirm,
+      as I'm also confused with the datasheet of the ICS9LPR426A which doesn't
+      seem to be correct for PLL chip on eee PC 901. It seems that coefficients
+      given in the datasheet are not correct and there seems to be some other
+      minor errors too.
 
 - Integrate with the cpufreq subsystem:
     - Allow on-demand speed changes (so that when CPU load increases, the
