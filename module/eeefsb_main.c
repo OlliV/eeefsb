@@ -64,7 +64,7 @@ static void eeefsb_set_voltage(enum eeefsb_voltage voltage)
 /*** /proc file functions *****************************************************
  * eeefsb proc files put under /proc/eeefsb:                                  *
  * bus_control =                                                              *
- * pll         =                                                              *
+ * cpu_freq    =                                                              *
  * fan_speed   =                                                              *
  * fan_rpm     =                                                              *
  * fan_control =                                                              *
@@ -111,11 +111,10 @@ struct eeefsb_proc_file
     void (*writefunc)(const char *buf, int buflen, int *bufpos);
 };
 
-
 EEEFSB_PROC_READFUNC(bus_control)
 {
     int cpuM = 0;
-    int cpuN =0;
+    int cpuN = 0;
     int PCID = 0;
     int voltage = 0;
 
@@ -135,6 +134,23 @@ EEEFSB_PROC_WRITEFUNC(bus_control)
     EEEFSB_PROC_SCANF(4, "%i %i %i %i", &cpuM, &cpuN, &PCID, &voltage);
     eeefsb_set_freq(cpuM, cpuN, PCID);
     eeefsb_set_voltage(voltage);
+}
+
+EEEFSB_PROC_READFUNC(cpu_freq)
+{
+    int cpuFreq;
+    cpuFreq = eeefsb_get_cpu_freq();
+    
+    EEEFSB_PROC_PRINTF("%d\n", cpuFreq);
+}
+
+EEEFSB_PROC_WRITEFUNC(cpu_freq)
+{
+    /* Sensible defaults */
+    int cpuFreq = 1600;
+
+    EEEFSB_PROC_SCANF(1, "%i", &cpuFreq);
+    eeefsb_wq_start(cpuFreq);
 }
 
 /*EEEFSB_PROC_READFUNC(pll)
@@ -213,6 +229,7 @@ EEEFSB_PROC_READFUNC(temperature)
 EEEFSB_PROC_FILES_BEGIN
     EEEFSB_PROC_RW(bus_control,    0644),
     /*EEEFSB_PROC_RO(pll,            0400),*/
+    EEEFSB_PROC_RW(cpu_freq,       0644),
     EEEFSB_PROC_RW(fan_speed,      0644),
     EEEFSB_PROC_RO(fan_rpm,        0444),
     EEEFSB_PROC_RW(fan_control,    0644),
@@ -226,12 +243,14 @@ int eeefsb_proc_readfunc(char *buffer, char **buffer_location, off_t offset,
     struct eeefsb_proc_file *procfile = (struct eeefsb_proc_file *)data;
     int bufpos = 0;
 
-    if (!procfile || !procfile->readfunc) {
+    if (!procfile || !procfile->readfunc)
+    {
         return -EIO;
     }
 
     *eof = 1;
-    if (offset > 0) {
+    if (offset > 0)
+    {
         return 0;
     }
 
@@ -266,13 +285,15 @@ int eeefsb_proc_init(void)
 
     /* Create the /proc/eeefsb directory. */
     eeefsb_proc_rootdir = proc_mkdir("eeefsb", NULL);
-    if (!eeefsb_proc_rootdir) {
+    if (!eeefsb_proc_rootdir)
+    {
         printk(KERN_ERR "eeefsb: Unable to create /proc/eeefsb\n");
         return false;
     }
 
     /* Create the individual proc files. */
-    for (i=0; eeefsb_proc_files[i].name; i++) {
+    for (i=0; eeefsb_proc_files[i].name; i++)
+    {
         struct proc_dir_entry *proc_file;
         struct eeefsb_proc_file *f = &eeefsb_proc_files[i];
 
@@ -294,7 +315,8 @@ int eeefsb_proc_init(void)
 
     /* We had an error, so cleanup all of the proc files... */
     proc_init_cleanup:
-    for (; i >= 0; i--) {
+    for (; i >= 0; i--)
+    {
         remove_proc_entry(eeefsb_proc_files[i].name, eeefsb_proc_rootdir);
     }
     remove_proc_entry("eeefsb", NULL);

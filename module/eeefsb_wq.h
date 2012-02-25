@@ -27,7 +27,7 @@
 #ifndef _EEEFSB_WQ_H_
 #define _EEEFSB_WQ_H_
 /*void intrpt_routine(struct work_struct *private_);*/
-void eeefsb_wq_start(void);
+void eeefsb_wq_start(int cpu_freq);
 void eeefsb_wq_init(void);
 void eeefsb_wq_cleanup(void);
 #endif

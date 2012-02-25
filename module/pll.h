@@ -33,6 +33,7 @@
 #define _PLL_H_
 void eeefsb_get_freq(int *cpuM, int *cpuN, int *PCID);
 void eeefsb_set_freq(int cpuM, int cpuN, int PCID);
+int eeefsb_get_cpu_freq(void);
 int eeefsb_pll_init(void);
 void eeefsb_pll_cleanup(void);
 #endif

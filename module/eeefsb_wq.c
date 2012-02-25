@@ -35,13 +35,17 @@
 #include <linux/init.h>         /* For __init and __exit */
 #include <linux/interrupt.h>	/* For irqreturn_t */
 #include "options.h"
+#include "pll.h"
  
 #define EEEFSB_WORK_QUEUE_NAME "WQeeefsb.c"
 
 static void intrpt_routine(struct work_struct *private_);
 
 static int die = 0; /* set this to 1 for shutdown */
-static int stepping_ready = 1;
+static int n_target = EEEFSB_CPU_N_SAFE;
+static int n_current = EEEFSB_CPU_N_SAFE;
+static int m_target = EEEFSB_CPU_M_SAFE;
+static int pci_target = EEEFSB_PCI_SAFE;
 
 /* The work queue structure for this task, from workqueue.h */
 static struct workqueue_struct *eeefsb_workqueue;
@@ -49,8 +53,19 @@ static struct workqueue_struct *eeefsb_workqueue;
 static struct delayed_work eeefsb_task;
 static DECLARE_DELAYED_WORK(eeefsb_task, intrpt_routine);
 
-void eeefsb_wq_start(void)
+void eeefsb_wq_start(int cpu_freq)
 {
+    int cpuM = 0;
+    int cpuN = 0;
+    int PCID = 0;
+
+    eeefsb_get_freq(&cpuM, &cpuN, &PCID);
+    n_current = cpuN;
+    m_target = cpuM;
+    pci_target = PCID;
+    
+    n_target = (cpu_freq * cpuM) / (EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL);
+    
     queue_delayed_work(eeefsb_workqueue, &eeefsb_task, EEEFSB_STEPDELAY);
 }
 
@@ -59,13 +74,34 @@ void eeefsb_wq_start(void)
  */
 static void intrpt_routine(struct work_struct *private_)
 {
-	/* 
-	 * Do some tasks 
-	 */
+    if (n_target > n_current)
+    {
+        if ((n_current + EEEFSB_MULSTEP) > n_target)
+        {
+            n_current = n_target;
+        }
+        else
+        {
+            n_current += EEEFSB_MULSTEP;
+        }
+        eeefsb_set_freq(m_target, n_current, pci_target);
+    }
+    else if (n_target < n_current)
+    {
+        if ((n_current - EEEFSB_MULSTEP) < n_target)
+        {
+            n_current = n_target;
+        }
+        else
+        {
+            n_current -= EEEFSB_MULSTEP;
+        }
+        eeefsb_set_freq(m_target, n_current, pci_target);
+    }
     
 	/* If cleanup wants us to die */
-	if (die == 0 && stepping_ready == 0)
-		eeefsb_wq_start();
+	if (die == 0 && n_current == n_target)
+		queue_delayed_work(eeefsb_workqueue, &eeefsb_task, EEEFSB_STEPDELAY);
 }
 
 /*
