@@ -10,19 +10,18 @@ Note: Kernel has to be loaded with acpi_enforce_resources=lax option and
 Usage:  once the module has been inserted, several files will appear in the
 /proc/eeefsb directory:
 
-    pll - Reading this file will dump the current configuration data from
-          the PLL chip.
-    fsb - Reading this file will return the current FSB and voltage settings,
-          while writing to this file will change the FSB and voltage.  The
-          format of this file is three integers:
-            <CPU PLL N multiplier>  <CPU PLL M divisor> <PCI PLL M divider>  <CPU voltage>
-          CPU voltage is 0 for "low" and 1 for "high".
-    fan_rpm - The current speed of the fan in revolutions per minute.
-    fan_speed - The current speed (0-100%) the fan is set to.
-    fan_manual - When 0, the embedded controller turns the fan on and off
-                 according to the CPU temperature.  When 1, writing to
-                 fan_speed will change the speed of the fan;  the embedded
-                 controller makes no changes on its own.
+    cpu_freq    - Set/Read current cpu clock speed (safety limits are set from options.h)
+    bus_control - Reading this file will return the current FSB and voltage settings,
+                  while writing to this file will change the FSB and voltage.  The
+                  format of this file is three integers:
+                  <CPU PLL N multiplier>  <CPU PLL M divisor> <PCI PLL M divider>  <CPU voltage>
+                  CPU voltage is 0 for "low" and 1 for "high".
+    fan_rpm     - The current speed of the fan in revolutions per minute.
+    fan_speed   - The current speed (0-100%) the fan is set to.
+    fan_manual  - When 0, the embedded controller turns the fan on and off
+                  according to the CPU temperature.  When 1, writing to
+                  fan_speed will change the speed of the fan;  the embedded
+                  controller makes no changes on its own.
     temperature - The temperature of the CPU (in degrees C).
 
 Note that when the fan is in manual mode, IT IS POSSIBLE TO DESTROY YOUR CPU!
