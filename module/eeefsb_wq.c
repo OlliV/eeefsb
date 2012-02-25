@@ -123,7 +123,7 @@ static void intrpt_routine(struct work_struct *private_)
         eeefsb_set_voltage(0);
     }
     
-    printk(KERN_INFO "eeefsb: set n = %i, target = %i\n", n_current, n_target); // KERN_DEBUG
+    printk(KERN_DEBUG "eeefsb: set n = %i, target = %i\n", n_current, n_target);
     
 	/* If cleanup wants us to die */
 	if (die == 0 && n_current != n_target)
