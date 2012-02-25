@@ -46,21 +46,6 @@ MODULE_DESCRIPTION("eee PC CPU speed control tool.");
 MODULE_VERSION(EEEFSB_VERSION);
 MODULE_INFO(module_depends, "i2c-i801");
 
-/*** Voltage functions *******************************************************
- * ICS9LPR426A                                                               */
-
-#define EC_VOLTAGE_PIN 0x66
-enum eeefsb_voltage { Low=0, High=1 };
-static enum eeefsb_voltage eeefsb_get_voltage(void)
-{
-    return eeefsb_ec_gpio_get(EC_VOLTAGE_PIN);
-}
-
-static void eeefsb_set_voltage(enum eeefsb_voltage voltage)
-{
-    eeefsb_ec_gpio_set(EC_VOLTAGE_PIN, voltage);
-}
-
 /*** /proc file functions *****************************************************
  * eeefsb proc files put under /proc/eeefsb:                                  *
  * bus_control =                                                              *

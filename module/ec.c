@@ -96,6 +96,26 @@ int eeefsb_ec_gpio_get(int pin)
     return (status) ? 1 : 0;
 }
 
+/*** Voltage functions ********************************************************
+ * ICS9LPR426A                                                                *
+*/
+#define EC_VOLTAGE_PIN 0x66
+int eeefsb_get_voltage(void)
+{
+    return eeefsb_ec_gpio_get(EC_VOLTAGE_PIN);
+}
+
+void eeefsb_set_voltage(int voltage)
+{
+    if (voltage > 0)
+    {
+        voltage = 1;
+    } else {
+        voltage = 0;
+    }
+    eeefsb_ec_gpio_set(EC_VOLTAGE_PIN, voltage);
+}
+
 /*** Fan and temperature functions *******************************************
  * ENE KB3310                                                                */
 #define EC_ST00 0xF451          /* Temperature of CPU (C)                    */

@@ -22,10 +22,10 @@
  *  This code comes WITHOUT ANY WARRANTY whatsoever.
  */
 
-#define EEEFSB_MINFSB        150   // Minimum FSB allowed [MHz]
-#define EEEFSB_MAXFSB        570   // Maximum FSB allowed [MHz]
-#define EEEFSB_MULSTEP       1     // Maximum FSB multiplier step per jiffy
-#define EEEFSB_HIVOLTFSB     85    // FSB value when high voltage is needed
+#define EEEFSB_MINFSBN       260   // Minimum FSB N multiplier allowed
+#define EEEFSB_MAXFSBN       468   // Maximum FSB N multiplier allowed
+#define EEEFSB_MULSTEP       3     // Maximum FSB multiplier step per jiffy
+#define EEEFSB_HIVOLTFREQ    900   // CPU speed value when high voltage is needed [MHz]
 #define EEEFSB_STEPDELAY     200   // Delay between steps [jiffy]
 #define EEEFSB_CPU_M_SAFE    50
 #define EEEFSB_CPU_N_SAFE    420

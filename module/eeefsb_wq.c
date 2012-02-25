@@ -36,6 +36,7 @@
 #include <linux/interrupt.h>	/* For irqreturn_t */
 #include "options.h"
 #include "pll.h"
+#include "ec.h"
  
 #define EEEFSB_WORK_QUEUE_NAME "WQeeefsb.c"
 
@@ -66,6 +67,7 @@ void eeefsb_wq_start(int cpu_freq)
     
     n_target = (cpu_freq * cpuM) / (EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL);
     
+    die = 0;
     queue_delayed_work(eeefsb_workqueue, &eeefsb_task, EEEFSB_STEPDELAY);
 }
 
@@ -76,6 +78,7 @@ static void intrpt_routine(struct work_struct *private_)
 {
     if (n_target > n_current)
     {
+        /* Target frequency is higher than current CPU frequency */
         if ((n_current + EEEFSB_MULSTEP) > n_target)
         {
             n_current = n_target;
@@ -86,8 +89,9 @@ static void intrpt_routine(struct work_struct *private_)
         }
         eeefsb_set_freq(m_target, n_current, pci_target);
     }
-    else if (n_target < n_current)
+    else if (n_target < n_current) 
     {
+        /* Target frequency is lower than current CPU frequency */
         if ((n_current - EEEFSB_MULSTEP) < n_target)
         {
             n_current = n_target;
@@ -99,8 +103,30 @@ static void intrpt_routine(struct work_struct *private_)
         eeefsb_set_freq(m_target, n_current, pci_target);
     }
     
+    /* Check N min & max */
+    if (n_current <= EEEFSB_MINFSBN)
+    {
+        n_current = EEEFSB_MINFSBN;
+        die = 1;
+    }
+    else if (n_current >= EEEFSB_MAXFSBN)
+    {
+        n_current = EEEFSB_MAXFSBN;
+        die = 1;
+    }
+    
+    /* Set high cpu core voltage if needed */
+    if (((n_current * EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL) / m_target) >= EEEFSB_HIVOLTFREQ)
+    {
+        eeefsb_set_voltage(1);
+    } else {
+        eeefsb_set_voltage(0);
+    }
+    
+    printk(KERN_INFO "eeefsb: set n = %i, target = %i\n", n_current, n_target); // KERN_DEBUG
+    
 	/* If cleanup wants us to die */
-	if (die == 0 && n_current == n_target)
+	if (die == 0 && n_current != n_target)
 		queue_delayed_work(eeefsb_workqueue, &eeefsb_task, EEEFSB_STEPDELAY);
 }
 
