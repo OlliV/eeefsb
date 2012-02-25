@@ -67,8 +67,9 @@ static void eeefsb_pll_write(void)
  */
 void eeefsb_get_freq(int *cpuM, int *cpuN, int *PCID)
 {
-    *cpuM = eeefsb_pll_data[11] & 0xFF; // Byte 11: CPU M
-    *cpuN = eeefsb_pll_data[12] & 0xFF; // Byte 12: CPU N
+    eeefsb_pll_read();
+    *cpuM = eeefsb_pll_data[11] & 0x1F;
+    *cpuN = ((eeefsb_pll_data[11] & 0xC0) >> 6) | ((eeefsb_pll_data[12] & 0xFF) << 2);
     *PCID = eeefsb_pll_data[15] & 0xFF; // Byte 15: PCI M
 }
 
@@ -78,9 +79,9 @@ void eeefsb_set_freq(int cpuM, int cpuN, int PCID)
     eeefsb_get_freq(&current_cpuM, &current_cpuN, &current_PCID);
     if (current_cpuM != cpuM || current_cpuN != cpuN || current_PCID != PCID)
     {
-        eeefsb_pll_data[11] = cpuM;
-        eeefsb_pll_data[12] = cpuN;
-        eeefsb_pll_data[15] = PCID;
+        eeefsb_pll_data[11] = (cpuM & 0x1F) | ((cpuN & 0x03) << 6);
+        eeefsb_pll_data[12] = (cpuN >> 2) & 0xFF;
+        eeefsb_pll_data[15] = PCID & 0xFF;
         eeefsb_pll_write();
     }
 }

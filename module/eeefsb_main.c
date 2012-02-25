@@ -114,9 +114,9 @@ struct eeefsb_proc_file
 
 EEEFSB_PROC_READFUNC(bus_control)
 {
-    int cpuM = 24;
-    int cpuN = 15;
-    int PCID = 143;
+    int cpuM = 0;
+    int cpuN =0;
+    int PCID = 0;
     int voltage = 0;
 
     eeefsb_get_freq(&cpuM, &cpuN, &PCID);
@@ -127,10 +127,10 @@ EEEFSB_PROC_READFUNC(bus_control)
 EEEFSB_PROC_WRITEFUNC(bus_control)
 {
     /* Sensible defaults */
-    int cpuM = 24;
-    int cpuN = 15;
-    int PCID = 143;
-    int voltage = 0;
+    int cpuM = 18;
+    int cpuN = 420;
+    int PCID = 15;
+    int voltage = 1;
 
     EEEFSB_PROC_SCANF(4, "%i %i %i %i", &cpuM, &cpuN, &PCID, &voltage);
     eeefsb_set_freq(cpuM, cpuN, PCID);
@@ -323,9 +323,6 @@ static int __init eeefsb_init(void)
     eeefsb_wq_init();
     printk(KERN_NOTICE "eee PC CPU speed control tool, version %s\n",
            EEEFSB_VERSION);
-    /* TEST */
-    eeefsb_wq_start();     
-    /* TEST */
     
     return 0;
 }
