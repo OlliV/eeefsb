@@ -1,5 +1,9 @@
 - procfs files => sysfs
 
+- Improve smart stepping
+    - It should be possible to get below 990 MHz by changing M value
+    - It should be possible to reach 2.0 GHz by altering PCI PLL divisors
+
 - Integrate with the cpufreq subsystem:
     - Allow on-demand speed changes (so that when CPU load increases, the
       FSB can automatically be raised).
@@ -11,3 +15,4 @@
 
 - Investigate ways to decrease power consumption during suspend-to-RAM.
     - Add way to turn off the USB clock
+    - Decrease other clocks or turn them off if possible
