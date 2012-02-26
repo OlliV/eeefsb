@@ -80,9 +80,9 @@ void eeefsb_wq_start(int cpu_freq)
          * so lets just check the current state and decide the correct        *
          * action then.                                                       *
          */
-        if (fan_speed_bfr_set_m && eeefsb_fan_get_manual())
+        if (!fan_speed_bfr_set_m && eeefsb_fan_get_manual())
         {
-            eeefsb_fan_set_speed(fan_speed_bfr_set_m);
+            eeefsb_fan_set_control(fan_speed_bfr_set_m);
         }
         /* Calculate new parameters */
         n_target = (cpu_freq * cpuM) / (EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL);
@@ -104,7 +104,7 @@ void eeefsb_wq_start(int cpu_freq)
             fan_speed_bfr_set_m = eeefsb_fan_get_speed();
         }
         eeefsb_fan_set_control(1);
-        eeefsb_fan_set_speed(70);
+        eeefsb_fan_set_speed(80); // Not like this! :S
     }
     
     die = 0;
