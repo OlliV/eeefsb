@@ -12,6 +12,14 @@
       given in the datasheet are not correct and there seems to be some other
       minor errors too.
 
+- Stepping is now little bit improved but we'd still need better way to calculate
+  M & N. This new method is actually shitty.
+      
+- First I was thinking there is no need to tamper with fan control but EC seems
+  to be pretty idiotic when the CPU is overclocked so I think I'll implement
+  some smart speed control for higher CPU speeds. (only problems seems to be that
+  EC stops fan when eee PC is suspended but never restarts it)
+
 - Integrate with the cpufreq subsystem:
     - Allow on-demand speed changes (so that when CPU load increases, the
       FSB can automatically be raised).
