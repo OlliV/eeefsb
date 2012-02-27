@@ -2,14 +2,12 @@ This kernel module is intended mainly for eee PC 901 over/underclocking. In the
 future it will hopefuly support cpufreqd and could be used for CPU speed
 stepping and smart power control etc.
 
-Maximum allowed CPU speed is now set to (around) 1782 MHz (actual could be
-little lower). I have heard that 2 GHz is achievable with some tuning and
-manual fan control so I keep hacking whenever I have sufficient time slots
-available. As of now this module go up to 1774 MHz by only changing PLL N
-multiplier and then jumps straight to 1782 MHz no mater what parameters
-user will give. I'll try to add even more steps between them in the future
-if it doesn't get too hard, as my main goal is still to achieve stabile
-2000 MHz with smart fan control.
+Maximum allowed CPU speed is now set to (around) 1806 MHz (actual could be
+little lower). Little bit smarter fan control for higher frequencies is now
+available but it could be still smarter.
+I have heard that 2 GHz is achievable with some tuning and manual fan
+control so I keep hacking whenever I have sufficient time slots
+available.
 
 Other things I have plans for is improving battery performance while on sleep
 mode. Motivation for this comes from the fact that eee PC's EC doesn't really
