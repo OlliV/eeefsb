@@ -48,9 +48,6 @@ static int n_current   = EEEFSB_CPU_N_SAFE;
 static int m_target    = EEEFSB_CPU_M_SAFE;
 static int m_current   = EEEFSB_CPU_M_SAFE;
 static int pci_target  = EEEFSB_PCI_SAFE;
-static int fan_ctrl_bfr_set_m = 0; /* Fan control state before setting M     */
-static unsigned int fan_speed_bfr_set_m = 0; /* Fan speed before forcing to
-                                                manual control by eeefsb     */
 
 /* The work queue structure for this task, from workqueue.h */
 static struct workqueue_struct *eeefsb_workqueue;
@@ -65,47 +62,29 @@ void eeefsb_wq_start(int cpu_freq)
     int PCID = 0;
 
     eeefsb_get_freq(&cpuM, &cpuN, &PCID);
-    n_current = cpuN;
-    m_current = cpuM;
+    n_current  = cpuN;
+    m_current  = cpuM;
     pci_target = PCID;
     
-    if (cpu_freq < 1774)
+    if (cpu_freq <= 1775)
     {
-        /* Check if we have previously forced the EC's fan control to manual  *
-         * control mode.                                                      *
-         * TODO This function will need some rework if we'd like to implement *
-         * our own optimum fan control in the future                          *
-         *                                                                    *
-         * I think we don't need to set manual control back again if user     *
-         * so lets just check the current state and decide the correct        *
-         * action then.                                                       *
-         */
-        if (!fan_speed_bfr_set_m && eeefsb_fan_get_manual())
-        {
-            eeefsb_fan_set_control(fan_speed_bfr_set_m);
-        }
-        /* Calculate new parameters */
-        n_target = (cpu_freq * cpuM) / (EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL);
-        m_target = 50; /* bad bad bad, hard codded values */
-    } else { /* This will lock the maximum speed to 1782 MHz */
-        n_target = 455;
-        m_target = 49;
+        /* Set back to automatic fan control by EC */
+        eeefsb_fan_set_control(0);
+        
+        m_target = 50; /* for frequencies <= 1774 MHz */
+    } else { /* CPU clock over 1774 MHz was requested */
         /* This is mandatory ...but remember to not set your laptop on sleep  *
          * or your CPU will be toasted on start up                            *
          */
-        fan_ctrl_bfr_set_m = eeefsb_fan_get_manual(); /* Remember current fan *
-        *                                                ctrl state           *
-        * and fan speed too. If user will now revert back to auto... well     *
-        * that's bad luck, since one should know that overclocking and        *
-        * standard cooling doesn't usually work very well.                    *
-        */
-        if (fan_ctrl_bfr_set_m)
-        {
-            fan_speed_bfr_set_m = eeefsb_fan_get_speed();
-        }
         eeefsb_fan_set_control(1);
-        eeefsb_fan_set_speed(80); // Not like this! :S
+        /* Calculate needed fan speed */
+        eeefsb_fan_set_speed((unsigned int)(80 + (cpu_freq - 1782) / 2));
+        
+        m_target = 49; /* for frequencies above 1774 MHz */
     }
+    
+    /* Calculate new N */
+    n_target = (cpu_freq * m_target) / (EEEFSB_PLL_CONST_MUL * EEEFSB_CPU_MUL);
     
     die = 0;
     queue_delayed_work(eeefsb_workqueue, &eeefsb_task, EEEFSB_STEPDELAY);
@@ -116,12 +95,15 @@ void eeefsb_wq_start(int cpu_freq)
  */
 static void intrpt_routine(struct work_struct *private_)
 {
-    /* Update M NOW if we are coming down from higher speed(s) *
-     * where M has beed altered                                */
+    int min_fsb_n;
+    int max_fsb_n;
+    
+    /* Update M now? */
     if ((n_target > n_current) && (m_target > m_current))
     {
         m_current = m_target;
         eeefsb_set_freq(m_current, n_current, pci_target);
+        printk(KERN_DEBUG "eeefsb: (a) set m = %i", m_current);
     }
 
     // Increment or decrement N */
@@ -153,23 +135,25 @@ static void intrpt_routine(struct work_struct *private_)
     }
     
     /* Check N min & max */
-    if (n_current <= EEEFSB_MINFSBN)
+    min_fsb_n = (m_current == 50) ? EEEFSB_MINFSBNL : EEEFSB_MINFSBNH;
+    max_fsb_n = (m_target == 50 &&  m_target < m_current) ? EEEFSB_MAXFSBNL : EEEFSB_MAXFSBNH;
+    if (n_current <= min_fsb_n)
     {
-        n_current = EEEFSB_MINFSBN;
+        n_current = min_fsb_n;
         die = 1;
     }
-    else if (n_current >= EEEFSB_MAXFSBN)
+    else if (n_current >= max_fsb_n)
     {
-        n_current = EEEFSB_MAXFSBN;
+        n_current = max_fsb_n;
         die = 1;
     }
-    
+        
     /* Is it safe to update M? */
-    if ((n_current == n_target || die) && (m_target != m_current))
+    if (((n_current == n_target) || die || (n_current-1 == min_fsb_n)) && (m_target != m_current))
     {
-        /* This part applies only when we are going up to higher speed(s)    */
         m_current = m_target;
         eeefsb_set_freq(m_current, n_current, pci_target);
+        printk(KERN_DEBUG "eeefsb: (b) set m = %i", m_current);
     }
     
     /* Set high cpu core voltage if needed */

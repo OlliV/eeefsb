@@ -175,36 +175,6 @@ EEEFSB_PROC_WRITEFUNC(fan_control)
     eeefsb_fan_set_control(manual);
 }
 
-#if 0
-9LPr426A_PROC_READFUNC(fan_mode)
-{
-    enum eeefsb_fan_mode mode = eeefsb_fan_get_mode();
-    switch (mode) {
-        case Manual:    EEEFSB_PROC_PRINTF("manual\n");
-                        break;
-        case Automatic: EEEFSB_PROC_PRINTF("auto\n");
-                        break;
-        case Embedded:  EEEFSB_PROC_PRINTF("embedded\n");
-                        break;
-    }
-}
-
-EEEFSB_PROC_WRITEFUNC(fan_mode)
-{
-    enum eeefsb_fan_mode mode = Automatic;
-    char inputstr[16];
-    EEEFSB_PROC_SCANF(1, "%15s", inputstr);
-    if (strcmp(inputstr, "manual") == 0) {
-        mode = Manual;
-    } else if (strcmp(inputstr, "auto") == 0) {
-        mode = Automatic;
-    } else if (strcmp(inputstr, "embedded") == 0) {
-        mode = Embedded;
-    }
-    eeefsb_fan_set_mode(mode);
-}
-#endif
-
 EEEFSB_PROC_READFUNC(temperature)
 {
     unsigned int t = eeefsb_get_temperature();
